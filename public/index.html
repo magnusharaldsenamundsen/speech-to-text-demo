@@ -1,0 +1,165 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+        <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBYrQ10Y4h12pWJ7Rj2qplK6iZ3NfYJ1dc",
+            authDomain: "sghackathon.firebaseapp.com",
+            databaseURL: "https://sghackathon.firebaseio.com",
+            projectId: "sghackathon",
+            storageBucket: "sghackathon.appspot.com",
+            messagingSenderId: "1000036283229"
+        };
+        firebase.initializeApp(config);
+        </script>
+
+        <style>
+            body {
+                background-color: black; 
+            }
+
+            .hal9000 {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .deactivated {
+                filter: grayscale(100%);
+            }
+
+            #keywords {
+                color: red;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+
+        </style>
+    </head>
+    <body onclick="startStopListening();">
+        <div>
+            <img id="start" class="hal9000 deactivated" src="HAL9000_Case.svg.png"/>
+        </div>
+
+        <h1 id="keywords"></h1>
+
+        <script>
+
+            let started = false;
+            let recognition;
+            window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+
+            pushToFirebase = function(input) {
+                // Get a key for a new Post.
+                var newActionKey = firebase.database().ref().child("actions").push().key;
+                console.log("Push to firebase", input);
+
+                var payload = {
+                    "timestamp": Date.now(),
+                    "keywords": input
+                }
+
+                var updates = {};
+                updates['/actions/' + newActionKey] = payload;
+                return firebase.database().ref().update(updates);
+                
+            }
+
+            startStopListening = function() {
+                if (!started) {
+                    console.log("Starting to listen");
+                    $( "#start" ).removeClass( "deactivated" );
+                    recognition = new window.SpeechRecognition();
+                    startListening();
+                } else {
+                    $( "#start" ).addClass( "deactivated" );
+                    console.log("Stopped listening");
+                    recognition.stop();
+                    started = false;
+                }
+            }
+
+            startListening = function() {
+                started = true;
+            
+                // ADD ADDITIONAL KEYWORDS FOR DEMO PURPOSES
+                let keywords = 'customer invoice pay paid date amount';
+
+                let finalTranscript = [];
+                recognition.interimResults = true;
+                recognition.maxAlternatives = 10;
+                recognition.continuous = true;
+                recognition.onresult = (event) => {
+                    let interimTranscript = [];
+                    for (let i = event.resultIndex, len = event.results.length; i < len; i++) {
+                        let transcript = event.results[i][0].transcript;
+
+                        console.log(transcript);
+
+                        if (event.results[i].isFinal) {
+                            // for each word, match against keyword and only add matches
+                            var words = transcript.split(/\s+/)
+                            for(var j = 0; j < words.length; j++) {                    
+                                if (keywords.indexOf(words[j]) !== -1) {
+                                    finalTranscript.push(words[j]);
+                                }
+                            }
+
+                            if (finalTranscript.length) {
+                                pushToFirebase(finalTranscript);
+                            }
+                            
+                        } else {
+                            interimTranscript.push(transcript);
+                            $("#keywords").html(interimTranscript.join(" - "));
+                        }
+
+                    }
+
+                    $("#keywords").html(finalTranscript.join(" - "));
+
+                }
+                recognition.start();
+            }
+            
+            </script>
+
+            <!-- script>
+                // Get a reference to the database service
+                var database = firebase.database();
+                
+                var allActionsRef = firebase.database().ref('/actions');
+                allActionsRef.on('value', function(snapshot) {
+                    console.log(snapshot.val())
+                    document.getElementById("actions").innerHTML = JSON.stringify(snapshot.val());
+
+                    var valuesFromResponse = snapshot.val();
+
+                    for (var key in valuesFromResponse) {
+                    
+                        if (valuesFromResponse.hasOwnProperty(key)) {
+                            var value = valuesFromResponse[key];
+                            console.log(value.timestamp);
+                            console.log(value.keywords);
+                        }
+                    }
+                });
+            </script>
+
+            <div style="color:red;" id="actions"></div-->
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
