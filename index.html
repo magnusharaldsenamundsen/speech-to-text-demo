@@ -53,12 +53,16 @@
             let recognition;
             window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
-            pushToFirebase = function(payload) {
+            pushToFirebase = function(input) {
                 // Get a key for a new Post.
                 var newActionKey = firebase.database().ref().child("actions").push().key;
                 console.log("Push to firebase", newActionKey);
 
-                // Write the new post's data simultaneously in the posts list and the user's post list.
+                var payload = {
+                    "timestamp": Date.now(),
+                    "keywords": input
+                }
+
                 var updates = {};
                 updates['/actions/' + newActionKey] = payload;
                 return firebase.database().ref().update(updates);
