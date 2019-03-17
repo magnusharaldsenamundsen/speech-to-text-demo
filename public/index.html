@@ -88,7 +88,7 @@
                 started = true;
             
                 // ADD ADDITIONAL KEYWORDS FOR DEMO PURPOSES
-                let keywords = 'customer invoice pay paid date amount';
+                let keywordsToMatch = ['customer', 'invoice', 'pay', 'paid', 'date', 'amount'];
 
                 let finalTranscript = [];
                 recognition.interimResults = true;
@@ -105,7 +105,7 @@
                             // for each word, match against keyword and only add matches
                             var words = transcript.split(/\s+/)
                             for(var j = 0; j < words.length; j++) {                    
-                                if (keywords.indexOf(words[j]) !== -1) {
+                                if (keywordsToMatch.includes(words[j])) {
                                     finalTranscript.push(words[j]);
                                 }
                             }
