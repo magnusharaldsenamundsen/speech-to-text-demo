@@ -26,6 +26,7 @@
                 display: block;
                 margin-left: auto;
                 margin-right: auto;
+                height: 80%;
             }
 
             .deactivated {
@@ -57,7 +58,6 @@
             window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
             pushToFirebase = function(input) {
-                // Get a key for a new Post.
                 var newActionKey = firebase.database().ref().child("actions").push().key;
                 console.log("Push to firebase", input);
 
